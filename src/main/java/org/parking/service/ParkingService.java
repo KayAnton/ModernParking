@@ -13,7 +13,7 @@ import org.parking.model.enums.SpotState;
 import org.parking.model.vehicles.Automobile;
 
 @Slf4j
-public class ParkingService {
+public final class ParkingService {
 
   public static void setupParking(Parking parking) {
     final List<Entrance> entrances = parking.getEntrances();

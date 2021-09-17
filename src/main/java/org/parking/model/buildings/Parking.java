@@ -24,9 +24,4 @@ public class Parking {
 
   private final ConcurrentLinkedDeque<Spot> parkingSpots = new ConcurrentLinkedDeque<>();
   private final List<Entrance> entrances = new ArrayList<>();
-
-  public int getNumberOfFreeSpots() {
-    return parkingSpots.size();
-  }
-
 }

@@ -13,6 +13,8 @@ import org.parking.service.ParkingService;
 @Slf4j
 public class EntranceRunner implements Runnable {
 
+  private final Random random = new Random();
+
   private final Entrance entrance;
   private final Parking entranceParking;
 
@@ -25,18 +27,13 @@ public class EntranceRunner implements Runnable {
   public void run() {
     log.info("Entrance is working...");
     while (entrance.getIsOpenedTime()) {
-      final Random random = new Random();
       final User bot = new User(random.nextInt(100) * 10000L);
       Automobile automobile = AutomobileFactory.createAutomobileByTypeId(bot, (int) Math.round(Math.random() * 3));
       bot.setAuto(automobile);
       if (ParkingService.checkIfCarAllowed(entranceParking, automobile)) {
         Spot spot = ParkingService.findEmptySpot(entranceParking, bot);
         if (spot != null) {
-          if (ParkingService.takeSpotForTime(spot, automobile, bot, (long) random.nextInt(10) + 20)) {
-//            log.debug("{} - level, {} - place is allocated for vehicle {}",
-//                spot.getLevel(), spot.getSpotNumber(), automobile);
-          }
-          continue;
+          ParkingService.takeSpotForTime(spot, automobile, bot, (long) random.nextInt(10) + 20);
         }
       }
       try {

@@ -8,7 +8,7 @@ import org.parking.model.vehicles.impl.Motorbike;
 import org.parking.model.vehicles.impl.RV;
 import org.parking.model.vehicles.impl.Track;
 
-public class AutomobileFactory {
+public final class AutomobileFactory {
 
   public static Automobile createAutomobileByTypeId(User user, int typeId) {
     return switch (typeId) {
