@@ -1,8 +1,8 @@
 package org.parking;
 
 public enum CarType {
-    CAR,
-    RV,
-    TRACK,
-    MOTORBIKE
+  CAR,
+  RV,
+  TRACK,
+  MOTORBIKE
 }

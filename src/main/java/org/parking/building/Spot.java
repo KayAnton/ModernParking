@@ -8,7 +8,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class Spot {
-    private final int level;
-    private final int spotNumber;
-    private long timestamp;
+
+  private final int level;
+  private final int spotNumber;
+  private long timestamp;
 }

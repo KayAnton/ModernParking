@@ -3,100 +3,98 @@
  */
 package org.parking.building;
 
-import lombok.extern.slf4j.Slf4j;
-import org.parking.vehicles.Automobile;
-
+import static java.time.Instant.now;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-
-import static java.time.Instant.now;
+import lombok.extern.slf4j.Slf4j;
+import org.parking.vehicles.Automobile;
 
 @Slf4j
-public class Parking implements Runnable{
-    private static Parking parking;
-    private ConcurrentLinkedDeque<Automobile> carPool;
-    private ConcurrentHashMap<Spot, Automobile> parkingSpots = new ConcurrentHashMap<>();
+public class Parking implements Runnable {
 
-    public static final int carPoolSize = 1000;
-    public static final int entranceNumber = 4;
+  public static final int CAR_POOL_SIZE = 1000;
+  public static final int ENTRANCE_NUMBER = 4;
+  public static final int PARKING_LEVELS = 4;
+  public static final int GET_PARKING_LEVEL_SIZE = 25;
+  public static final int PARKING_SIZE = PARKING_LEVELS * GET_PARKING_LEVEL_SIZE;
 
-    public static final int parkingLevels = 4;
-    public static final int getParkingLevelSize = 25;
-    public static final int parkingSize = parkingLevels * getParkingLevelSize;
+  private static Parking parking;
 
-    private ArrayList<Entrance> entrances = new ArrayList<>();
-    private Boolean isOpenedTime = true;
+  private final ConcurrentHashMap<Spot, Automobile> parkingSpots = new ConcurrentHashMap<>();
+  private final List<Entrance> entrances = new ArrayList<>();
 
-    public static void main(String[] args) {
-        parking  = new Parking();
-        parking.setup();
-        parking.runParking();
+  private ConcurrentLinkedDeque<Automobile> carPool;
+
+  public static void main(String[] args) {
+    parking = new Parking();
+    parking.setup();
+    parking.runParking();
+  }
+
+  private void runParking() {
+    ExecutorService executor = Executors.newFixedThreadPool(5);
+    entrances.forEach(executor::execute);
+    executor.execute(parking);
+  }
+
+  private void setup() {
+    carPool = new ConcurrentLinkedDeque<>();
+    for (int i = 0; i < CAR_POOL_SIZE; i++) {
+      int vehicleTypeId = (int) Math.round(Math.random() * 3);
+      carPool.add(Automobile.createAutomobileByType(vehicleTypeId));
     }
 
-    private void runParking() {
-        ExecutorService executor = Executors.newFixedThreadPool(5);
-        entrances.stream().forEach(executor::execute);
-        executor.execute(parking);
-    }
 
-    private void setup() {
-        carPool = new ConcurrentLinkedDeque<Automobile>();
-        for(int i =0; i < carPoolSize; i++) {
-            int vehicleTypeId = (int) Math.round(Math.random() * 3);
-            carPool.add(Automobile.createAutomobileByType(vehicleTypeId));
+    for (int i = 0; i < ENTRANCE_NUMBER; i++) {
+      entrances.add(new Entrance(this));
+    }
+  }
+
+  public Spot findEmptySpot() {
+    if (parkingSpots.size() < PARKING_SIZE) {
+      for (int levelNumber = 0; levelNumber < PARKING_LEVELS; levelNumber++) {
+        for (int spotNumber = 0; spotNumber < GET_PARKING_LEVEL_SIZE; spotNumber++) {
+          Spot spot = new Spot(levelNumber, spotNumber, now().getEpochSecond() + Math.round(Math.random() * 10000));
+          if (parkingSpots.get(spot) == null) {
+            return spot;
+          }
         }
-
-
-        for(int i = 0; i < entranceNumber; i++) {
-            entrances.add(new Entrance(this));
-        }
+      }
     }
+    return null;
+  }
 
-    public Spot findEmptySpot() {
-        if (parkingSpots.size() < parkingSize) {
-            for (int levelNumber = 0; levelNumber < parkingLevels; levelNumber++) {
-                for (int spotNumber = 0; spotNumber < getParkingLevelSize; spotNumber++) {
-                    Spot spot = new Spot(levelNumber, spotNumber, now().getEpochSecond() + Math.round(Math.random() * 10000));
-                    if (parkingSpots.get(spot) == null) {
-                        return spot;
-                    }
-                }
-            }
-        }
-        return null;
-    }
+  public void pushAutomobile(Automobile automobile, Spot spot) {
+    parkingSpots.put(spot, automobile);
+  }
 
-    public void pushAutomobile(Automobile automobile, Spot spot) {
-        parkingSpots.put(spot, automobile);
-    }
+  public Automobile autoComesFromTheRealWorld() {
+    return carPool.removeFirst();
+  }
 
-    public Automobile autoComesFromTheRealWorld() {
-        return carPool.removeFirst();
-    }
+  public void pushBackToPool(Automobile automobile) {
+    carPool.addFirst(automobile);
+  }
 
-    public void pushBackToPool(Automobile automobile) {
-        carPool.addFirst(automobile);
+  @Override
+  public void run() {
+    //parking check by itself paid-time and remove car when money is over
+    System.out.println("Parking is working...");
+    boolean isOpenedTime = true;
+    while (isOpenedTime) {
+      parkingSpots.keySet().stream().filter(spot -> spot.getTimestamp() < now().getEpochSecond()).forEach(spot -> {
+        Automobile auto = parkingSpots.remove(spot);
+        log.info("{}.{} left the parking", auto.getType(), auto);
+        pushBackToPool(auto);
+      });
     }
+  }
 
-    @Override
-    public void run() {
-        //parking check by itself paid-time and remove car when money is over
-        System.out.println(String.format("Parking is working..."));
-        while (isOpenedTime) {
-            parkingSpots.keySet().stream().filter(spot -> spot.getTimestamp() < now().getEpochSecond()).forEach(spot -> {
-                Automobile auto = parkingSpots.remove(spot);
-                System.out.println(String.format("%s.%s left the parking", auto.getType(), auto));
-                pushBackToPool(auto);
-            });
-        }
-    }
-
-    public int getNumberOfFreeSpots() {
-        return parkingSpots.size();
-    }
+  public int getNumberOfFreeSpots() {
+    return parkingSpots.size();
+  }
 }
