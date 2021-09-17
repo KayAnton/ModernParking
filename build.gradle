@@ -43,7 +43,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClassName = 'org.parking.building.Parking'
+    mainClassName = 'org.parking.ParkingSystem'
 }
 
 test {

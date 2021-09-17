@@ -4,12 +4,11 @@
 package org.parking;
 
 import org.junit.jupiter.api.Test;
-import org.parking.building.Parking;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class AppTest {
-    @Test void appHasAGreeting() {
-        Parking classUnderTest = new Parking();
-    }
+
+  @Test
+  void appHasAGreeting() {
+    ParkingSystem classUnderTest = new ParkingSystem();
+  }
 }

@@ -1,4 +1,4 @@
-package org.parking.building;
+package org.parking.model.buildings;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,4 +12,5 @@ public class Spot {
   private final int level;
   private final int spotNumber;
   private long timestamp;
+
 }

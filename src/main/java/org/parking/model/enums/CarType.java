@@ -1,4 +1,4 @@
-package org.parking;
+package org.parking.model.enums;
 
 public enum CarType {
   CAR,
