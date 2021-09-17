@@ -5,7 +5,6 @@ package org.parking.model.buildings;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import lombok.Data;
 import org.parking.model.vehicles.Automobile;
@@ -23,23 +22,8 @@ public class Parking {
   private final int parkingSize = parkingLevels * getParkingLevelSize;
   private boolean isOpen = true;
 
-  private final ConcurrentHashMap<Spot, Automobile> parkingSpots = new ConcurrentHashMap<>();
+  private final ConcurrentLinkedDeque<Spot> parkingSpots = new ConcurrentLinkedDeque<>();
   private final List<Entrance> entrances = new ArrayList<>();
-
-  private final ConcurrentLinkedDeque<Automobile> carPool = new ConcurrentLinkedDeque<>();
-
-
-  public void pushAutomobile(Automobile automobile, Spot spot) {
-    parkingSpots.put(spot, automobile);
-  }
-
-  public Automobile autoComesFromTheRealWorld() {
-    return carPool.removeFirst();
-  }
-
-  public void pushCarToPool(Automobile automobile) {
-    carPool.addFirst(automobile);
-  }
 
   public int getNumberOfFreeSpots() {
     return parkingSpots.size();
