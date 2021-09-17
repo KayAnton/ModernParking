@@ -4,14 +4,15 @@
 package org.parking.model.buildings;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import lombok.Data;
+import lombok.Getter;
 import org.parking.model.vehicles.Automobile;
 import org.parking.model.vehicles.impl.Car;
 import org.parking.model.vehicles.impl.Motorbike;
 
-@Data
+@Getter
 public class Parking {
 
   private final List<Class<? extends Automobile>> acceptableAutoTypeList = List.of(Car.class, Motorbike.class);
@@ -20,8 +21,8 @@ public class Parking {
   private final int parkingLevels = 4;
   private final int getParkingLevelSize = 25;
   private final int parkingSize = parkingLevels * getParkingLevelSize;
-  private boolean isOpen = true;
+  private final boolean isOpen = true;
 
-  private final ConcurrentLinkedDeque<Spot> parkingSpots = new ConcurrentLinkedDeque<>();
+  private final List<Spot> parkingSpots = Collections.synchronizedList(new LinkedList<>());
   private final List<Entrance> entrances = new ArrayList<>();
 }

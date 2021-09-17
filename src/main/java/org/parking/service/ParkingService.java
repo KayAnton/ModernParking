@@ -1,9 +1,11 @@
 package org.parking.service;
 
 import static java.time.Instant.now;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.parking.model.User;
 import org.parking.model.buildings.Entrance;
@@ -16,11 +18,8 @@ import org.parking.model.vehicles.Automobile;
 public final class ParkingService {
 
   public static void setupParking(Parking parking) {
-    final List<Entrance> entrances = parking.getEntrances();
-    for (int i = 0; i < parking.getEntranceAmount(); i++) {
-      entrances.add(new Entrance(parking));
-    }
-    final ConcurrentLinkedDeque<Spot> parkingSpots = parking.getParkingSpots();
+    parking.getEntrances().addAll(Collections.nCopies(parking.getEntranceAmount(), new Entrance(parking)));
+    final List<Spot> parkingSpots = parking.getParkingSpots();
     for (int levelNumber = 0; levelNumber < parking.getParkingLevels(); levelNumber++) {
       for (int spotNumber = 0; spotNumber < parking.getGetParkingLevelSize(); spotNumber++) {
         parkingSpots.add(new Spot(parking, levelNumber, spotNumber));
@@ -42,7 +41,7 @@ public final class ParkingService {
   }
 
   public static boolean reserveSpot(Spot spot, User user) {
-    if (spot.getSpotState().equals(SpotState.FREE)) {
+    if (SpotState.FREE.equals(spot.getSpotState())) {
       spot.setReservedBy(user);
       spot.setExpireTs(now().getEpochSecond() + 60);
       return true;
@@ -51,39 +50,43 @@ public final class ParkingService {
   }
 
   public static boolean takeSpot(Spot spot, Automobile automobile, User user) {
-    if (Objects.isNull(spot) || Objects.isNull(automobile) || Objects.isNull(user)) {
-      return false;
-    }
-    final SpotState spotState = spot.getSpotState();
-    if (checkIfCarAllowed(spot.getParking(), automobile) &&
-        ((spotState.equals(SpotState.RESERVED) && user.equals(spot.getReservedBy()))
-            || spotState.equals(SpotState.FREE))) {
+    return takeSpot(spot, automobile, user, () -> {
       spot.setReservedBy(null);
       spot.setExpireTs(null);
       spot.setAutomobile(automobile);
       return true;
-    }
-    return false;
+    });
   }
 
   public static boolean takeSpotForTime(Spot spot, Automobile automobile, User user, Long timeInSeconds) {
-    if (Objects.isNull(spot) || Objects.isNull(automobile) || Objects.isNull(user)) {
-      return false;
-    }
-    final SpotState spotState = spot.getSpotState();
-    if (checkIfCarAllowed(spot.getParking(), automobile) &&
-        ((spotState.equals(SpotState.RESERVED) && user.equals(spot.getReservedBy()))
-            || spotState.equals(SpotState.FREE))) {
+    return takeSpot(spot, automobile, user, () -> {
       spot.setReservedBy(null);
       spot.setExpireTs(now().getEpochSecond() + timeInSeconds);
       spot.setAutomobile(automobile);
       user.setTakenSpot(spot);
       return true;
+    });
+  }
+
+  public static boolean takeSpot(Spot spot, Automobile automobile, User user, Supplier<Boolean> resultSupplier) {
+    if (Objects.isNull(spot) || Objects.isNull(automobile) || Objects.isNull(user)) {
+      return false;
+    }
+    final SpotState spotState = spot.getSpotState();
+    if (checkIfCarAllowed(spot.getParking(), automobile) &&
+        ((SpotState.RESERVED.equals(spotState) && user.equals(spot.getReservedBy()))
+            || SpotState.FREE.equals(spotState))) {
+      return resultSupplier.get();
     }
     return false;
   }
 
   public static void outputParkingState(Parking parking) {
-    log.info("Current parking state: {}", parking.getParkingSpots());
+    parking.getParkingSpots().stream()
+        .collect(Collectors.groupingBy(Spot::getLevel))
+        .forEach((level, spotList) -> {
+          log.info("Level: {}", level);
+          spotList.forEach(spot -> log.info("(Spot number: {}, State: {})", spot.getNumber(), spot.getSpotState()));
+        });
   }
 }

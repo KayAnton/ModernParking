@@ -2,7 +2,6 @@ package org.parking.runner;
 
 import static java.time.Instant.now;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import lombok.extern.slf4j.Slf4j;
 import org.parking.model.buildings.Parking;
 import org.parking.model.buildings.Spot;
@@ -21,8 +20,7 @@ public class ParkingRunner implements Runnable {
     //parking check by itself paid-time and remove car when money is over
     log.info("Parking is working...");
     while (parking.isOpen()) {
-      final ConcurrentLinkedDeque<Spot> parkingSpots = parking.getParkingSpots();
-      parkingSpots.stream()
+      parking.getParkingSpots().stream()
           .filter(spot -> Objects.nonNull(spot.getExpireTs()) && spot.getExpireTs() < now().getEpochSecond())
           .forEach(Spot::clear);
     }

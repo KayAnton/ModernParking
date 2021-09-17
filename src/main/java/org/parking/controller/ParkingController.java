@@ -13,6 +13,8 @@ import org.parking.service.ParkingService;
 @Slf4j
 public class ParkingController implements Runnable {
 
+  private static final long USER_ID = 123L;
+
   private final Parking parking;
 
   public ParkingController(Parking parking) {
@@ -21,8 +23,8 @@ public class ParkingController implements Runnable {
 
   @Override
   public void run() {
-    final User user = new User(123L);
-    user.setAuto(AutomobileFactory.createAutomobileByType(user, CarType.CAR));
+    final User user = new User(USER_ID);
+    AutomobileFactory.createAutomobileByType(user, CarType.CAR);
     try (Scanner in = new Scanner(System.in)) {
       while (true) {
         log.info(
@@ -33,7 +35,7 @@ public class ParkingController implements Runnable {
               Spot spot = ParkingService.findEmptySpot(parking, user);
               if (Objects.nonNull(spot)) {
                 user.setTakenSpot(spot);
-                log.info("Found and reserved an empty spot: {}", spot);
+                log.info("Found and reserved an empty spot: Level: {}, Number: {}", spot.getLevel(), spot.getNumber());
               } else {
                 log.error("No empty spots found, try again later.");
               }

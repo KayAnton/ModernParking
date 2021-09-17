@@ -11,14 +11,14 @@ import org.parking.model.vehicles.Automobile;
 import org.parking.service.ParkingService;
 
 @Slf4j
-public class EntranceRunner implements Runnable {
+public class EntranceBotSimulator implements Runnable {
 
   private final Random random = new Random();
 
   private final Entrance entrance;
   private final Parking entranceParking;
 
-  public EntranceRunner(Entrance entrance) {
+  public EntranceBotSimulator(Entrance entrance) {
     this.entrance = entrance;
     this.entranceParking = entrance.getParking();
   }
@@ -29,7 +29,6 @@ public class EntranceRunner implements Runnable {
     while (entrance.getIsOpenedTime()) {
       final User bot = new User(random.nextInt(100) * 10000L);
       Automobile automobile = AutomobileFactory.createAutomobileByTypeId(bot, (int) Math.round(Math.random() * 3));
-      bot.setAuto(automobile);
       if (ParkingService.checkIfCarAllowed(entranceParking, automobile)) {
         Spot spot = ParkingService.findEmptySpot(entranceParking, bot);
         if (spot != null) {

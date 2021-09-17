@@ -1,7 +1,6 @@
 package org.parking.model.buildings;
 
 import java.util.Objects;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,7 @@ public class Spot {
   private final int level;
 
   @EqualsAndHashCode.Include
-  private final int spotNumber;
+  private final int number;
 
   private Automobile automobile;
   private User reservedBy;
@@ -46,7 +45,4 @@ public class Spot {
     return SpotState.FREE;
   }
 
-  public String toString() {
-    return String.format("Level: %s, Spot number: %s", level, spotNumber);
-  }
 }

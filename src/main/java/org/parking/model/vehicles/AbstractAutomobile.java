@@ -10,6 +10,7 @@ public abstract class AbstractAutomobile implements Automobile {
 
   public AbstractAutomobile(User user) {
     this.owner = user;
+    user.setAuto(this);
   }
 
   public String toString() {

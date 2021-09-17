@@ -1,11 +1,11 @@
 package org.parking.model.buildings;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class Entrance {
 
-  private volatile Boolean isOpenedTime = true;
+  private final Boolean isOpenedTime = true;
   private final Parking parking;
 
   public Entrance(Parking parking) {
